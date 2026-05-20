@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Kitchen Stock Manager</string>
+    <string name="greeting">Selamat Pagi, Alex!</string>
+    <string name="subtitle">Dapur Anda terlihat segar hari ini.</string>
+    <string name="search_hint">Cari bahan atau resep...</string>
+    <string name="expiring_soon_title">Barang Segera Kadaluarsa</string>
+    <string name="expiring_soon_desc">3 barang perlu perhatian Anda dalam 48 jam ke depan.</string>
+    <string name="review_items">Tinjau barang</string>
+    <string name="running_low">Hampir Habis</string>
+    <string name="view_all">Lihat Semua</string>
+    <string name="categories">Kategori</string>
+    <string name="spices">Rempah</string>
+    <string name="grains">Biji-bijian</string>
+    <string name="fruits">Buah-buahan</string>
+    <string name="vegetables">Sayuran</string>
+    <string name="nav_dashboard">Dasbor</string>
+    <string name="nav_inventory">Inventaris</string>
+    <string name="nav_add">Tambah</string>
+    <string name="nav_shopping">Belanja</string>
+</resources>
