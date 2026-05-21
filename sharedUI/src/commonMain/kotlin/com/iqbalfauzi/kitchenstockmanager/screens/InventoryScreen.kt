@@ -1,32 +1,30 @@
 package com.iqbalfauzi.kitchenstockmanager.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.iqbalfauzi.kitchenstockmanager.components.AppTopBar
 import com.iqbalfauzi.kitchenstockmanager.components.PantryItemCard
-import com.iqbalfauzi.kitchenstockmanager.theme.*
-import kitchenstockmanager.sharedui.generated.resources.*
-import org.jetbrains.compose.resources.stringResource
+import com.iqbalfauzi.kitchenstockmanager.theme.Primary
 
 @Composable
-fun InventoryScreen() {
+fun InventoryScreen(
+    onNavigateToDetail: (String) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,7 +33,7 @@ fun InventoryScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         FilterSection()
         Spacer(modifier = Modifier.height(16.dp))
-        InventoryList()
+        InventoryList(onNavigateToDetail)
     }
 }
 
@@ -63,7 +61,7 @@ fun FilterSection() {
 }
 
 @Composable
-fun InventoryList() {
+fun InventoryList(onNavigateToDetail: (String) -> Unit) {
     val items = listOf(
         InventoryItemData("Hass Avocados", "4 units", "Produce", "Fresh", Color(0xFF4CAF50)),
         InventoryItemData("Organic Whole Milk", "200 ml", "Dairy", "Exp. Tomorrow", Color(0xFFF4D35E)),
@@ -82,7 +80,8 @@ fun InventoryList() {
                 category = item.category,
                 status = item.status,
                 statusColor = item.statusColor,
-                imagePlaceholder = item.name.take(1)
+                imagePlaceholder = item.name.take(1),
+                onClick = { onNavigateToDetail(item.name) }
             )
         }
     }

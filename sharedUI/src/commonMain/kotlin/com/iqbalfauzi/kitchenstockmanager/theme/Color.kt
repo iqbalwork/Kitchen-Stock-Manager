@@ -16,3 +16,12 @@ val LowStock = Color(0xFF9B8E1A)
 val ExpiringSoon = Color(0xFFE63946)
 val WarningContainer = Color(0xFFFFE5E5)
 val WarningText = Color(0xFF8B0000)
+
+// Dark Theme Colors
+val PrimaryDark = Color(0xFF74D6A1)
+val BackgroundDark = Color(0xFF121212)
+val SurfaceDark = Color(0xFF1E1E1E)
+val OnBackgroundDark = Color(0xFFE1E1E1)
+val OnSurfaceDark = Color(0xFFE1E1E1)
+val WarningContainerDark = Color(0xFF3D0000)
+val WarningTextDark = Color(0xFFFFB4B4)

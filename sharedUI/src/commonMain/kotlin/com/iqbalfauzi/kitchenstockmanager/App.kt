@@ -26,6 +26,8 @@ sealed interface Route : NavKey {
     @Serializable object Inventory : Route
     @Serializable object Shopping : Route
     @Serializable object AddItem : Route
+    @Serializable data class ItemDetail(val itemId: String) : Route
+    @Serializable data class UpdateItem(val itemId: String) : Route
 }
 
 private val navConfig = SavedStateConfiguration {
@@ -35,6 +37,8 @@ private val navConfig = SavedStateConfiguration {
             subclass(Route.Inventory::class, Route.Inventory.serializer())
             subclass(Route.Shopping::class, Route.Shopping.serializer())
             subclass(Route.AddItem::class, Route.AddItem.serializer())
+            subclass(Route.ItemDetail::class, Route.ItemDetail.serializer())
+            subclass(Route.UpdateItem::class, Route.UpdateItem.serializer())
         }
     }
 }
@@ -131,12 +135,25 @@ fun App() {
                         color = MaterialTheme.colorScheme.background
                     ) {
                         when (key) {
-                            is Route.Dashboard -> DashboardScreen()
-                            is Route.Inventory -> InventoryScreen()
+                            is Route.Dashboard -> DashboardScreen(
+                                onNavigateToDetail = { id -> backStack.add(Route.ItemDetail(id)) }
+                            )
+                            is Route.Inventory -> InventoryScreen(
+                                onNavigateToDetail = { id -> backStack.add(Route.ItemDetail(id)) }
+                            )
                             is Route.Shopping -> ShoppingScreen()
                             is Route.AddItem -> AddItemScreen(onBack = { 
                                 if (backStack.size > 1) backStack.removeAt(backStack.size - 1)
                             })
+                            is Route.ItemDetail -> ItemDetailScreen(
+                                itemId = key.itemId,
+                                onBack = { backStack.removeAt(backStack.size - 1) },
+                                onNavigateToUpdate = { id -> backStack.add(Route.UpdateItem(id)) }
+                            )
+                            is Route.UpdateItem -> UpdateItemScreen(
+                                itemId = key.itemId,
+                                onBack = { backStack.removeAt(backStack.size - 1) }
+                            )
                             else -> Text("Unknown Route")
                         }
                     }
