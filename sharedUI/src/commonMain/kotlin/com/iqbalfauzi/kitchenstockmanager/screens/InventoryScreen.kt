@@ -1,54 +1,83 @@
 package com.iqbalfauzi.kitchenstockmanager.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.iqbalfauzi.kitchenstockmanager.components.AppTopBar
 import com.iqbalfauzi.kitchenstockmanager.components.PantryItemCard
+import com.iqbalfauzi.kitchenstockmanager.presentation.inventory.*
 import com.iqbalfauzi.kitchenstockmanager.theme.Primary
+import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryScreen(
-    onNavigateToDetail: (String) -> Unit
+    onNavigateToDetail: (String) -> Unit,
+    viewModel: InventoryViewModel = koinViewModel()
 ) {
+    val state by viewModel.viewState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.viewEffect.collect { effect ->
+            when (effect) {
+                is InventoryEffect.NavigateToDetail -> onNavigateToDetail(effect.itemId)
+                is InventoryEffect.ShowError -> {
+                    // Handle error
+                }
+            }
+        }
+    }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         AppTopBar(title = "Kitchen Inventory")
-        Spacer(modifier = Modifier.height(16.dp))
-        FilterSection()
-        Spacer(modifier = Modifier.height(16.dp))
-        InventoryList(onNavigateToDetail)
+        
+        PullToRefreshBox(
+            isRefreshing = state.isLoading,
+            onRefresh = { viewModel.handleIntent(InventoryIntent.Refresh) },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column {
+                FilterSection(
+                    selectedFilter = state.selectedFilter,
+                    onFilterSelected = { viewModel.handleIntent(InventoryIntent.OnFilterSelected(it)) }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                InventoryList(
+                    items = state.items,
+                    onItemClick = { viewModel.handleIntent(InventoryIntent.OnItemClick(it)) }
+                )
+            }
+        }
     }
 }
 
 @Composable
-fun FilterSection() {
+fun FilterSection(
+    selectedFilter: String,
+    onFilterSelected: (String) -> Unit
+) {
     val filters = listOf("All Items", "Produce", "Dairy", "Meat", "Pantry")
     LazyRow(
         modifier = Modifier.padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filters) { filter ->
-            val isSelected = filter == "All Items"
+            val isSelected = filter == selectedFilter
             FilterChip(
                 selected = isSelected,
-                onClick = {},
+                onClick = { onFilterSelected(filter) },
                 label = { Text(filter) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = Primary,
@@ -61,36 +90,23 @@ fun FilterSection() {
 }
 
 @Composable
-fun InventoryList(onNavigateToDetail: (String) -> Unit) {
-    val items = listOf(
-        InventoryItemData("Hass Avocados", "4 units", "Produce", "Fresh", Color(0xFF4CAF50)),
-        InventoryItemData("Organic Whole Milk", "200 ml", "Dairy", "Exp. Tomorrow", Color(0xFFF4D35E)),
-        InventoryItemData("Chicken Breast", "500 g", "Meat", "Use Today", Color(0xFFE63946)),
-        InventoryItemData("Fusilli Pasta", "1.2 kg", "Pantry", "Exp. Dec 2024", Color.Gray)
-    )
-
+fun InventoryList(
+    items: List<com.iqbalfauzi.kitchenstockmanager.domain.model.PantryItem>,
+    onItemClick: (String) -> Unit
+) {
     LazyColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(items) { item ->
             PantryItemCard(
-                name = item.name,
-                quantity = item.quantity,
-                category = item.category,
+                name = item.productName,
+                quantity = "${item.quantity} ${item.unit}",
+                category = item.categoryName,
                 status = item.status,
-                statusColor = item.statusColor,
-                imagePlaceholder = item.name.take(1),
-                onClick = { onNavigateToDetail(item.name) }
+                imagePlaceholder = item.productName.take(1),
+                onClick = { onItemClick(item.id) }
             )
         }
     }
 }
-
-data class InventoryItemData(
-    val name: String,
-    val quantity: String,
-    val category: String,
-    val status: String,
-    val statusColor: Color
-)

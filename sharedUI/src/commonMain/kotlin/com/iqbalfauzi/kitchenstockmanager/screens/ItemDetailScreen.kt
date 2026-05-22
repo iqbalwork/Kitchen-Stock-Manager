@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.iqbalfauzi.kitchenstockmanager.components.AppTopBar
 import com.iqbalfauzi.kitchenstockmanager.theme.LowStock
 import com.iqbalfauzi.kitchenstockmanager.theme.Primary
 
@@ -52,16 +53,14 @@ fun ItemDetailScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Item Details") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
+            AppTopBar(
+                title = "Item Details",
+                showBackButton = true,
+                onBackClick = onBack,
+                showProfile = false,
                 actions = {
                     IconButton(onClick = { onNavigateToUpdate(itemId) }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
+                        Icon(Icons.Default.MoreVert, contentDescription = "More", tint = Primary)
                     }
                 }
             )

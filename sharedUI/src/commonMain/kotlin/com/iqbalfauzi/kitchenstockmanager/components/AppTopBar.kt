@@ -23,7 +23,8 @@ fun AppTopBar(
     title: String,
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
-    showProfile: Boolean = true
+    showProfile: Boolean = true,
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -46,6 +47,7 @@ fun AppTopBar(
             }
         },
         actions = {
+            actions()
             if (showProfile) {
                 Box(
                     modifier = Modifier

@@ -2,39 +2,16 @@ package com.iqbalfauzi.kitchenstockmanager.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BakeryDining
-import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.Egg
-import androidx.compose.material.icons.filled.Grain
-import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material.icons.filled.Opacity
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,59 +20,63 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.iqbalfauzi.kitchenstockmanager.components.AppTopBar
-import com.iqbalfauzi.kitchenstockmanager.components.PantryItemCard
-import com.iqbalfauzi.kitchenstockmanager.components.SectionHeader
-import com.iqbalfauzi.kitchenstockmanager.theme.ExpiringSoon
-import com.iqbalfauzi.kitchenstockmanager.theme.LowStock
-import com.iqbalfauzi.kitchenstockmanager.theme.WarningContainer
-import com.iqbalfauzi.kitchenstockmanager.theme.WarningContainerDark
-import com.iqbalfauzi.kitchenstockmanager.theme.WarningText
-import com.iqbalfauzi.kitchenstockmanager.theme.WarningTextDark
-import kitchenstockmanager.sharedui.generated.resources.Res
-import kitchenstockmanager.sharedui.generated.resources.app_name
-import kitchenstockmanager.sharedui.generated.resources.categories
-import kitchenstockmanager.sharedui.generated.resources.expiring_soon_desc
-import kitchenstockmanager.sharedui.generated.resources.expiring_soon_title
-import kitchenstockmanager.sharedui.generated.resources.fruits
-import kitchenstockmanager.sharedui.generated.resources.grains
-import kitchenstockmanager.sharedui.generated.resources.greeting
-import kitchenstockmanager.sharedui.generated.resources.review_items
-import kitchenstockmanager.sharedui.generated.resources.running_low
-import kitchenstockmanager.sharedui.generated.resources.search_hint
-import kitchenstockmanager.sharedui.generated.resources.spices
-import kitchenstockmanager.sharedui.generated.resources.subtitle
-import kitchenstockmanager.sharedui.generated.resources.vegetables
-import kitchenstockmanager.sharedui.generated.resources.view_all
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.iqbalfauzi.kitchenstockmanager.components.*
+import com.iqbalfauzi.kitchenstockmanager.domain.model.PantryItem
+import com.iqbalfauzi.kitchenstockmanager.presentation.dashboard.*
+import com.iqbalfauzi.kitchenstockmanager.theme.*
+import kitchenstockmanager.sharedui.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onNavigateToDetail: (String) -> Unit
+    onNavigateToDetail: (String) -> Unit,
+    viewModel: DashboardViewModel = koinViewModel()
 ) {
+    val state by viewModel.viewState.collectAsStateWithLifecycle()
+    
+    LaunchedEffect(Unit) {
+        viewModel.viewEffect.collect { effect ->
+            when (effect) {
+                is DashboardEffect.NavigateToDetail -> onNavigateToDetail(effect.itemId)
+                is DashboardEffect.ShowError -> {
+                    // Handle error
+                }
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         AppTopBar(title = stringResource(Res.string.app_name))
         
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+        PullToRefreshBox(
+            isRefreshing = state.isLoading,
+            onRefresh = { viewModel.handleIntent(DashboardIntent.Refresh) },
+            modifier = Modifier.fillMaxSize()
         ) {
-            item {
-                DashboardHeader()
-            }
-            item {
-                ExpiringSoonCard()
-            }
-            item {
-                RunningLowSection(onNavigateToDetail)
-            }
-            item {
-                CategoriesSection()
-            }
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                item {
+                    DashboardHeader()
+                }
+                item {
+                    ExpiringSoonCard(state.expiringSoon)
+                }
+                item {
+                    RunningLowSection(state.runningLow, onNavigateToDetail)
+                }
+                item {
+                    CategoriesSection()
+                }
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
             }
         }
     }
@@ -103,6 +84,7 @@ fun DashboardScreen(
 
 @Composable
 fun DashboardHeader() {
+    var searchQuery by remember { mutableStateOf("") }
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -117,71 +99,39 @@ fun DashboardHeader() {
             color = Color.Gray
         )
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(Res.string.search_hint)) },
-            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
-            )
+        AppSearchBar(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = stringResource(Res.string.search_hint)
         )
     }
 }
 
 @Composable
-fun ExpiringSoonCard() {
+fun ExpiringSoonCard(items: List<PantryItem>) {
+    if (items.isEmpty()) return
+    
     val isDark = isSystemInDarkTheme()
     val containerColor = if (isDark) WarningContainerDark else WarningContainer
     val textColor = if (isDark) WarningTextDark else WarningText
     val iconBgColor = if (isDark) Color(0xFFE63946) else ExpiringSoon
 
-    Card(
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(iconBgColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Warning, contentDescription = null, tint = Color.White)
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = stringResource(Res.string.expiring_soon_title),
-                    color = textColor,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = stringResource(Res.string.expiring_soon_desc),
-                    color = textColor,
-                    fontSize = 14.sp
-                )
-                TextButton(onClick = {}, contentPadding = PaddingValues(0.dp)) {
-                    Text(
-                        text = stringResource(Res.string.review_items) + " →",
-                        color = textColor,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-    }
+    InfoCard(
+        title = stringResource(Res.string.expiring_soon_title),
+        description = "${items.size} items need your attention within the next 48 hours.",
+        icon = Icons.Default.Warning,
+        iconBgColor = iconBgColor,
+        containerColor = containerColor,
+        contentColor = textColor,
+        actionText = stringResource(Res.string.review_items),
+        onActionClick = {}
+    )
 }
 
 @Composable
-fun RunningLowSection(onNavigateToDetail: (String) -> Unit) {
+fun RunningLowSection(items: List<PantryItem>, onNavigateToDetail: (String) -> Unit) {
+    if (items.isEmpty()) return
+
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -199,39 +149,19 @@ fun RunningLowSection(onNavigateToDetail: (String) -> Unit) {
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                PantryItemCard(
-                    name = "Olive Oil",
-                    quantity = "15% left",
-                    status = "15% left",
-                    progress = 0.15f,
-                    icon = Icons.Default.Opacity,
-                    iconBg = Color(0xFFF4D35E),
-                    statusColor = LowStock,
-                    showProgress = true,
-                    onClick = { onNavigateToDetail("1") }
-                )
-                PantryItemCard(
-                    name = "Organic Eggs",
-                    quantity = "2 remaining",
-                    status = "2 remaining",
-                    progress = 0.2f,
-                    icon = Icons.Default.Egg,
-                    iconBg = Color(0xFFA8E6CF),
-                    statusColor = LowStock,
-                    showProgress = true,
-                    onClick = { onNavigateToDetail("2") }
-                )
-                PantryItemCard(
-                    name = "Whole Wheat Flour",
-                    quantity = "Low",
-                    status = "Low",
-                    progress = 0.3f,
-                    icon = Icons.Default.BakeryDining,
-                    iconBg = Color(0xFFE0E0E0),
-                    statusColor = LowStock,
-                    showProgress = true,
-                    onClick = { onNavigateToDetail("3") }
-                )
+                items.forEach { item ->
+                    PantryItemCard(
+                        name = item.productName,
+                        quantity = "${item.quantity} ${item.unit}",
+                        status = item.status,
+                        progress = item.progress,
+                        icon = Icons.Default.Opacity, // In real app use icon mapping
+                        iconBg = Color(0xFFF4D35E),
+                        statusColor = LowStock,
+                        showProgress = true,
+                        onClick = { onNavigateToDetail(item.id) }
+                    )
+                }
             }
         }
     }
