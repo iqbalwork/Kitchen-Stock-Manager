@@ -4,10 +4,12 @@ import Combine
 
 @MainActor
 class InventoryViewModel: ObservableObject {
-    private let repository = MockPantryRepository()
+    private let useCaseHelper = UseCaseHelper()
     
     @Published var items: [PantryItem] = []
     @Published var selectedFilter: String = "All Items"
+    @Published var isLoading = false
+    @Published var toast: Toast? = nil
     
     let filters = ["All Items", "Produce", "Dairy", "Meat", "Pantry"]
     
@@ -16,6 +18,18 @@ class InventoryViewModel: ObservableObject {
     }
     
     func loadItems() {
-        self.items = repository.getInventoryItems()
+        Task {
+            await refresh()
+        }
+    }
+    
+    func refresh() async {
+        isLoading = true
+        do {
+            self.items = try await useCaseHelper.getInventoryItems()
+        } catch {
+            self.toast = Toast(message: "Failed to load inventory: \(error.localizedDescription)", type: .error)
+        }
+        isLoading = false
     }
 }

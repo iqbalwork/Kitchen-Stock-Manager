@@ -189,6 +189,3 @@ struct UpdateItemPage: View {
     }
 }
 
-#Preview {
-    UpdateItemPage(viewModel: UpdateItemViewModel(item: MockPantryRepository().getInventoryItems().first!))
-}

@@ -52,7 +52,7 @@ struct ItemDetailPage: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(viewModel.item.name)
                                 .font(.system(size: 28, weight: .bold))
-                            Text("\(viewModel.item.category.name.capitalized) • Whole Foods Market")
+                            Text("\(viewModel.item.categoryName.capitalized) • Whole Foods Market")
                                 .font(.system(size: 14))
                                 .foregroundColor(.gray)
                         }
@@ -60,9 +60,9 @@ struct ItemDetailPage: View {
                         Spacer()
                         
                         VStack {
-                            Text(viewModel.item.quantity.components(separatedBy: " ").first ?? "0")
+                            Text("\(Int(viewModel.item.quantity))")
                                 .font(.system(size: 20, weight: .bold))
-                            Text(viewModel.item.quantity.components(separatedBy: " ").last ?? "units")
+                            Text(viewModel.item.unit)
                                 .font(.system(size: 12))
                         }
                         .padding(.horizontal, 12)
@@ -140,6 +140,9 @@ struct ItemDetailPage: View {
                 }
                 .padding(.vertical)
             }
+            .refreshable {
+                await viewModel.refresh()
+            }
         }
         .background(AppColors.background)
         .navigationBarHidden(true)
@@ -154,9 +157,20 @@ struct ItemDetailPage: View {
         .sheet(isPresented: $showUpdateItem) {
             UpdateItemPage(viewModel: UpdateItemViewModel(item: viewModel.item))
         }
+        .overlay {
+            if let toast = viewModel.toast {
+                VStack {
+                    Spacer()
+                    ToastView(toast: toast)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        viewModel.toast = nil
+                    }
+                }
+                .animation(.spring(), value: viewModel.toast != nil)
+            }
+        }
     }
-}
-
-#Preview {
-    ItemDetailPage(viewModel: ItemDetailViewModel(item: MockPantryRepository().getInventoryItems().first!))
 }

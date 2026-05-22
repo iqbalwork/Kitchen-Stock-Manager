@@ -9,6 +9,13 @@ data class Inventory(
     val updatedAt: String? = null
 )
 
+sealed class StockStatus {
+    data class LowStock(val percentage: Int) : StockStatus()
+    object ExpiringSoon : StockStatus()
+    object UseToday : StockStatus()
+    object Fresh : StockStatus()
+}
+
 // UI helper model that combines Product and Inventory info
 data class PantryItem(
     val id: String,
@@ -16,8 +23,15 @@ data class PantryItem(
     val quantity: Double,
     val unit: String,
     val categoryName: String,
-    val status: String, // e.g. "Fresh", "Expiring Soon"
+    val status: StockStatus,
     val expiryDate: String? = null,
-    val progress: Float = 1.0f,
-    val price: String? = null
-)
+    val progress: Float? = null,
+    val price: String? = null,
+    val isChecked: Boolean = false
+) {
+    // For backward compatibility or easy access in Swift
+    val name: String get() = productName
+    val category: CategoryHelper get() = CategoryHelper(categoryName)
+}
+
+data class CategoryHelper(val name: String)

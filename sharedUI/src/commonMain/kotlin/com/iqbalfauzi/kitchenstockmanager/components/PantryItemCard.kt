@@ -15,13 +15,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.iqbalfauzi.kitchenstockmanager.domain.model.StockStatus
+
 @Composable
 fun PantryItemCard(
     name: String,
     modifier: Modifier = Modifier,
     quantity: String? = null,
     category: String? = null,
-    status: String? = null,
+    status: StockStatus? = null,
     statusColor: Color = Color.Gray,
     progress: Float? = null,
     icon: ImageVector? = null,
@@ -33,6 +35,14 @@ fun PantryItemCard(
     price: String? = null,
     onClick: () -> Unit = {}
 ) {
+    val statusText = when (status) {
+        is StockStatus.LowStock -> "${status.percentage}% left"
+        is StockStatus.ExpiringSoon -> "Expiring Soon"
+        is StockStatus.UseToday -> "Use Today"
+        is StockStatus.Fresh -> "Fresh"
+        null -> null
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         onClick = onClick,
@@ -88,8 +98,8 @@ fun PantryItemCard(
                         Badge(containerColor = Color(0xFFF0F0F0), contentColor = Color.Gray) {
                             Text(category, fontSize = 10.sp)
                         }
-                    } else if (status != null && !showProgress) {
-                        Text(text = status, fontSize = 12.sp, color = statusColor)
+                    } else if (statusText != null && !showProgress) {
+                        Text(text = statusText, fontSize = 12.sp, color = statusColor)
                     }
                 }
                 
@@ -97,7 +107,7 @@ fun PantryItemCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(text = "Remaining", fontSize = 12.sp, color = Color.Gray)
-                        Text(text = status ?: "", fontSize = 12.sp, color = statusColor)
+                        Text(text = statusText ?: "", fontSize = 12.sp, color = statusColor)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(
@@ -110,20 +120,20 @@ fun PantryItemCard(
                     Text(text = "Quantity", fontSize = 12.sp, color = Color.Gray)
                     Text(text = quantity, fontWeight = FontWeight.Medium, fontSize = 14.sp)
                     
-                    if (status != null) {
+                    if (statusText != null) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(statusColor))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(text = status, fontSize = 12.sp, color = statusColor)
+                            Text(text = statusText, fontSize = 12.sp, color = statusColor)
                         }
                     }
                 }
                 
                 // For shopping list specific status badge at the bottom right of column
-                if (price != null && status != null) {
+                if (price != null && statusText != null) {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                         Badge(containerColor = statusColor.copy(alpha = 0.1f), contentColor = statusColor) {
-                            Text(status, fontSize = 10.sp)
+                            Text(statusText, fontSize = 10.sp)
                         }
                     }
                 }

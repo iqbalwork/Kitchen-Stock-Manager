@@ -5,61 +5,81 @@ struct DashboardPage: View {
     @StateObject private var viewModel = DashboardViewModel()
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // Header
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Hello, Chef!")
-                        .font(.system(size: 24, weight: .bold))
-                    Text("Check your kitchen stock today")
-                        .font(.system(size: 14))
-                        .foregroundColor(.gray)
-                    
-                    SearchBar(text: $viewModel.searchText, placeholder: "Search ingredients...")
-                        .padding(.top, 8)
-                }
-                .padding(.horizontal)
-                
-                // Expiring Soon
-                ExpiringSoonCard()
-                    .padding(.horizontal)
-                
-                // Running Low
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Text("Running Low")
-                            .font(.system(size: 20, weight: .bold))
-                        Spacer()
-                        Button("View All") {
-                            // Action
-                        }
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(AppColors.primary)
+        ZStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    // Header
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Hello, Chef!")
+                            .font(.system(size: 24, weight: .bold))
+                        Text("Check your kitchen stock today")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                        
+                        SearchBar(text: $viewModel.searchText, placeholder: "Search ingredients...")
+                            .padding(.top, 8)
                     }
                     .padding(.horizontal)
                     
-                    VStack(spacing: 12) {
-                        ForEach(viewModel.items, id: \.id) { item in
-                            NavigationLink(destination: ItemDetailPage(viewModel: ItemDetailViewModel(item: item))) {
-                                PantryItemRow(item: item)
+                    // Expiring Soon
+                    ExpiringSoonCard()
+                        .padding(.horizontal)
+                    
+                    // Running Low
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text("Running Low")
+                                .font(.system(size: 20, weight: .bold))
+                            Spacer()
+                            Button("View All") {
+                                // Action
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(AppColors.primary)
                         }
+                        .padding(.horizontal)
+                        
+                        VStack(spacing: 12) {
+                            ForEach(viewModel.items, id: \.id) { item in
+                                NavigationLink(destination: ItemDetailPage(viewModel: ItemDetailViewModel(item: item))) {
+                                    PantryItemRow(item: item)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    
+                    // Categories
+                    CategoryGrid()
+                        .padding(.horizontal)
+                    
+                    Spacer()
+                        .frame(height: 100) // Space for FAB
                 }
-                
-                // Categories
-                CategoryGrid()
-                    .padding(.horizontal)
-                
-                Spacer()
-                    .frame(height: 100) // Space for FAB
+                .padding(.vertical)
             }
-            .padding(.vertical)
+            .background(AppColors.background)
+            .navigationBarHidden(true)
+            .refreshable {
+                await viewModel.refresh()
+            }
+            
+            // Snackbar / Toast Overlay
+            if let toast = viewModel.toast {
+                VStack {
+                    Spacer()
+                    ToastView(toast: toast)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                viewModel.toast = nil
+                            }
+                        }
+                }
+                .animation(.spring(), value: viewModel.toast != nil)
+            }
         }
-        .background(AppColors.background)
-        .navigationBarHidden(true)
     }
 }
 

@@ -24,7 +24,7 @@ struct PantryItemRow: View {
                         .fill(Color(hex: 0xF0F0F0))
                         .frame(width: 60, height: 60)
                     
-                    Text(String(item.name.prefix(1)))
+                    Text(String(item.productName.prefix(1)))
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.gray)
                 }
@@ -32,7 +32,7 @@ struct PantryItemRow: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text(item.name)
+                    Text(item.productName)
                         .font(.system(size: 16, weight: .bold))
                         .strikethrough(isShoppingMode && item.isChecked)
                     
@@ -42,7 +42,7 @@ struct PantryItemRow: View {
                         Text(price)
                             .font(.system(size: 14, weight: .bold))
                     } else if !isShoppingMode {
-                        StatusBadge(text: item.category.name.capitalized, color: .gray)
+                        StatusBadge(text: item.categoryName.capitalized, color: .gray)
                     }
                 }
                 
@@ -60,12 +60,12 @@ struct PantryItemRow: View {
                                 
                                 RoundedRectangle(cornerRadius: 3)
                                     .fill(statusColor)
-                                    .frame(width: geometry.size.width * CGFloat(progress.floatValue), height: 6)
+                                    .frame(width: geometry.size.width * CGFloat(truncating: progress), height: 6)
                             }
                         }
                         .frame(height: 6)
                         
-                        Text(item.quantity)
+                        Text("\(Int(item.quantity)) \(item.unit)")
                             .font(.system(size: 12))
                             .foregroundColor(statusColor)
                     }
@@ -73,7 +73,7 @@ struct PantryItemRow: View {
                     Text("Quantity")
                         .font(.system(size: 12))
                         .foregroundColor(.gray)
-                    Text(item.quantity)
+                    Text("\(Int(item.quantity)) \(item.unit)")
                         .font(.system(size: 14, weight: .medium))
                     
                     HStack(spacing: 4) {
@@ -129,3 +129,4 @@ struct PantryItemRow: View {
         }
     }
 }
+

@@ -2,6 +2,7 @@ package com.iqbalfauzi.kitchenstockmanager.data.dto
 
 import com.iqbalfauzi.kitchenstockmanager.domain.model.Inventory
 import com.iqbalfauzi.kitchenstockmanager.domain.model.PantryItem
+import com.iqbalfauzi.kitchenstockmanager.domain.model.StockStatus
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -32,7 +33,7 @@ fun InventoryDto.toPantryItem() = PantryItem(
     quantity = quantity,
     unit = product?.unit ?: "",
     categoryName = "Pantry", // Should ideally join Category too
-    status = "Fresh", // Logic to determine based on expiry
+    status = StockStatus.Fresh, // Logic to determine based on expiry
     expiryDate = expiryDate,
     progress = 1.0f
 )

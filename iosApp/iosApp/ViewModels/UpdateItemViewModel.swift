@@ -15,10 +15,10 @@ class UpdateItemViewModel: ObservableObject {
     let units = ["Pieces (pcs)", "kg", "grams", "liters"]
     
     init(item: PantryItem) {
-        self.itemName = item.name
-        self.selectedCategory = "Produce" // Default or map from item.category
-        self.quantity = Int(item.quantity.components(separatedBy: " ").first ?? "0") ?? 0
-        self.unit = "Pieces (pcs)"
+        self.itemName = item.productName
+        self.selectedCategory = item.categoryName
+        self.quantity = Int(item.quantity)
+        self.unit = item.unit
         self.purchaseDate = Date()
         self.expiryDate = Date()
     }

@@ -4,10 +4,12 @@ import Combine
 
 @MainActor
 class ShoppingViewModel: ObservableObject {
-    private let repository = MockPantryRepository()
+    private let useCaseHelper = UseCaseHelper()
     
     @Published var suggestedItems: [PantryItem] = []
     @Published var customItems: [PantryItem] = []
+    @Published var isLoading = false
+    @Published var toast: Toast? = nil
     
     var remainingItemsCount: Int {
         suggestedItems.count + customItems.count
@@ -18,7 +20,19 @@ class ShoppingViewModel: ObservableObject {
     }
     
     func loadItems() {
-        self.suggestedItems = repository.getSuggestedShoppingItems()
-        self.customItems = repository.getCustomShoppingItems()
+        Task {
+            await refresh()
+        }
+    }
+    
+    func refresh() async {
+        isLoading = true
+        do {
+            self.suggestedItems = try await useCaseHelper.getShoppingList()
+            self.customItems = [] // Placeholder
+        } catch {
+            self.toast = Toast(message: "Failed to load shopping list: \(error.localizedDescription)", type: .error)
+        }
+        isLoading = false
     }
 }

@@ -25,7 +25,7 @@ import kitchenstockmanager.sharedui.generated.resources.Res
 import kitchenstockmanager.sharedui.generated.resources.app_name
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 

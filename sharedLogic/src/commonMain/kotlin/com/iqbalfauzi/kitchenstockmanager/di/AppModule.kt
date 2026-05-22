@@ -9,6 +9,7 @@ import com.iqbalfauzi.kitchenstockmanager.domain.usecase.GetShoppingListUseCase
 import com.iqbalfauzi.kitchenstockmanager.domain.usecase.AddPantryItemUseCase
 import com.iqbalfauzi.kitchenstockmanager.domain.usecase.GetCategoriesUseCase
 import com.iqbalfauzi.kitchenstockmanager.domain.usecase.GetStorageLocationsUseCase
+import com.iqbalfauzi.kitchenstockmanager.domain.usecase.GetItemDetailUseCase
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
@@ -41,4 +42,5 @@ val appModule = module {
     factory { AddPantryItemUseCase(get()) }
     factory { GetCategoriesUseCase(get()) }
     factory { GetStorageLocationsUseCase(get()) }
+    factory { GetItemDetailUseCase(get()) }
 }
